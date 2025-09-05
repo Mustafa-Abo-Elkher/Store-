@@ -1,6 +1,6 @@
 // Helpers (DOM, storage helpers, validation, encoding)
 function getUsers() {
-  return JSON.parse(localStorage.getItem("users")) || [];
+  return JSON.parse(localStorage.getItem("users") || "[]");
 }
 
 function saveUsers(users) {
@@ -8,21 +8,40 @@ function saveUsers(users) {
 }
 
 function getActiveUser() {
-  return JSON.parse(localStorage.getItem("activeUser"));
+  // Check session storage first (admin)
+  const sessionUser = JSON.parse(
+    sessionStorage.getItem("activeUser") || "null"
+  );
+  if (sessionUser) return sessionUser;
+
+  // Then local storage (regular users)
+  return JSON.parse(localStorage.getItem("activeUser") || "null");
 }
 
 function setActiveUser(user) {
-  localStorage.setItem("activeUser", JSON.stringify(user));
+  clearActiveUser(); // Remove any previous session
+
+  if (user && user.isAdmin) {
+    sessionStorage.setItem("activeUser", JSON.stringify(user));
+  } else {
+    localStorage.setItem("activeUser", JSON.stringify(user));
+  }
 }
 
+function clearActiveUser() {
+  sessionStorage.removeItem("activeUser");
+  localStorage.removeItem("activeUser");
+}
+
+// When updating user, preserve same storage context
 function updateUser(updatedUser) {
-  let users = getUsers();
-  let idx = users.findIndex((u) => u.email === updatedUser.email);
-  if (idx !== -1) {
+  const users = getUsers();
+  const idx = users.findIndex((u) => u.email === updatedUser.email);
+  if (idx >= 0) {
     users[idx] = updatedUser;
     saveUsers(users);
   }
-  setActiveUser(updatedUser); // keep session in sync
+  setActiveUser(updatedUser);
 }
 
 function $id(id) {
