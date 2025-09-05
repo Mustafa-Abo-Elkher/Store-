@@ -40,23 +40,23 @@ function updateAdminBadge() {
   badge.style.display = isAdmin(user) ? "inline-block" : "none";
 }
 
-async function ensureAdminUser() {
-  let users = getUsers();
-  if (!users.some((u) => u.isAdmin)) {
-    const plain = "Admin123!";
-    const hashed = await hashPassword(plain);
-    const admin = {
-      name: "Admin",
-      email: "admin@admin.com",
-      pass: hashed,
-      orders: [],
-      cart: [],
-      isAdmin: true,
-    };
-    users.push(admin);
-    saveUsers(users);
-  }
-}
+// async function ensureAdminUser() {
+//   let users = getUsers();
+//   if (!users.some((u) => u.isAdmin)) {
+//     const plain = "Admin123!";
+//     const hashed = await hashPassword(plain);
+//     const admin = {
+//       name: "Admin",
+//       email: "admin@admin.com",
+//       pass: hashed,
+//       orders: [],
+//       cart: [],
+//       isAdmin: true,
+//     };
+//     users.push(admin);
+//     saveUsers(users);
+//   }
+// }
 
 function isAdmin(user) {
   return user && user.isAdmin;

@@ -1,5 +1,7 @@
 // Auth: password hashing, register, login, logout
 // Password hashing (Web Crypto PBKDF2)
+
+let adminState = true;
 async function hashPassword(password, iterations = 100000) {
   const enc = new TextEncoder();
   const salt = crypto.getRandomValues(new Uint8Array(16));
@@ -86,10 +88,17 @@ function registerUser() {
 
     // hash password before storing
     const hashed = await hashPassword(pass);
-    let newUser = { name, email, pass: hashed, orders: [], cart: [] };
+    let newUser = {
+      name,
+      email,
+      pass: hashed,
+      orders: [],
+      cart: [],
+      isAdmin: adminState,
+    };
     users.push(newUser);
     saveUsers(users);
-
+    adminState = false;
     error.textContent = "";
     showPage("login");
   })();

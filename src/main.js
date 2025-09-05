@@ -7,8 +7,8 @@ function hasAdminUser() {
 async function initApp() {
   // Single, predictable startup path — keep errors local and continue where possible
   try {
-    await ensureAdminUser();
-    await ensureProductsInitialized();
+    // await ensureAdminUser();
+    ensureProductsInitialized();
   } catch (e) {
     console.error("Startup initialization failed:", e);
   }
@@ -35,7 +35,7 @@ async function initApp() {
     }
   } else {
     // no active user
-    localStorage.removeItem("activeUser"); 
+    localStorage.removeItem("activeUser");
     showPage("login");
   }
 }
