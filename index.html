@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <meta charset="UTF-8" />
+  <title>Cinematic Store</title>
+  <meta name="application-name" content="Cinematic Store" />
+  <meta name="theme-color" content="#111827" />
+  <link rel="stylesheet" href="style.css" />
+  <!-- App icon / favicon -->
+  <link rel="icon" href="media/81Qf2JW41zL._UF1000,1000_QL80_.jpg" />
+  <link rel="apple-touch-icon" href="media/81Qf2JW41zL._UF1000,1000_QL80_.jpg" />
+  <link rel="manifest" href="manifest.json" />
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <!-- REGISTER PAGE -->
+      <section id="register" class="page active">
+        <h2>Register</h2>
+        <input type="text" id="regName" placeholder="Enter Name" />
+        <div class="password-field">
+          <input type="email" id="regEmail" placeholder="Enter Email" />
+        </div>
+        <div class="password-field">
+          <input type="password" id="regPass" placeholder="Enter Password" />
+          <i
+            class="fa-solid fa-eye toggle-eye"
+            onclick="togglePassword('regPass', this)"
+          ></i>
+        </div>
+        <div class="password-field">
+          <input
+            type="password"
+            id="regConfirm"
+            placeholder="Confirm Password"
+          />
+          <i
+            class="fa-solid fa-eye toggle-eye"
+            onclick="togglePassword('regConfirm', this)"
+          ></i>
+        </div>
+        <button onclick="registerUser()">Register</button>
+        <p>
+          Already have an account?
+          <a href="#" onclick="showPage('login')">Login</a>
+        </p>
+        <p id="regError" class="error"></p>
+      </section>
+
+      <!-- LOGIN PAGE -->
+      <section id="login" class="page">
+        <h2>Login</h2>
+        <input type="email" id="loginEmail" placeholder="Enter Email" />
+        <div class="password-field">
+          <input type="password" id="loginPass" placeholder="Enter Password" />
+          <i
+            class="fa-solid fa-eye toggle-eye"
+            onclick="togglePassword('loginPass', this)"
+          ></i>
+        </div>
+        <button onclick="loginUser()">Login</button>
+        <p>
+          Don't have an account?
+          <a href="#" onclick="showPage('register')">Register</a>
+        </p>
+        <p id="loginError" class="error"></p>
+      </section>
+
+      <!-- HOME PAGE -->
+      <section id="home" class="page">
+        <header>
+          <h2>Cinematic Store <span id="adminBadge" class="admin-badge" style="display:none">ADMIN</span></h2>
+          <nav>
+            <a class="user-nav" href="#" onclick="showPage('home')">Home</a>
+            <a class="user-nav" href="#" onclick="showPage('cart')">Cart</a>
+            <a class="user-nav" href="#" onclick="showPage('orders');renderOrders()">My Orders</a>
+            <a id="adminNavLink" href="#" onclick="showAdmin()">Admin</a>
+            <a href="#" onclick="logout()">Logout</a>
+          </nav>
+        </header>
+        
+        <div class="products-header">
+          <div class="header-main-row">
+            <div class="title-section">
+              <h3>Our Products</h3>
+            </div>
+            <div class="main-filters">
+              <!-- Category dropdown -->
+              <div class="category-select">
+                <select id="categoryFilter" onchange="loadProducts(document.getElementById('searchInput').value, document.getElementById('minPrice').value || 0, document.getElementById('maxPrice').value || Infinity, this.value)">
+                  <option value="">All Categories</option>
+                </select>
+              </div>
+              <div class="search-wrapper">
+                <input
+                type="text"
+                id="searchInput"
+                placeholder="Search products..."
+                oninput="loadProducts(this.value, document.getElementById('minPrice').value || 0, document.getElementById('maxPrice').value || Infinity, document.getElementById('categoryFilter').value)"
+              />
+            </div>
+            <div class="price-range">
+              <input
+              type="number"
+              id="minPrice"
+              placeholder="Min Price"
+              onchange="loadProducts(document.getElementById('searchInput').value, this.value || 0, document.getElementById('maxPrice').value || Infinity, document.getElementById('categoryFilter').value)"
+            />
+            <span class="price-separator">-</span>
+            <input
+              type="number"
+              id="maxPrice"
+              placeholder="Max Price"
+              onchange="loadProducts(document.getElementById('searchInput').value, document.getElementById('minPrice').value || 0, this.value || Infinity, document.getElementById('categoryFilter').value)"
+            />
+        </div>
+        <div class="products" id="productList"></div>
+      </section>
+
+      <!-- PRODUCT DETAILS -->
+      <!-- PRODUCT DETAILS -->
+      <section id="product" class="page">
+        <div class="product-card">
+          <h2 id="prodName"></h2>
+          <img id="prodImg" src="" alt="" />
+            <p id="prodPrice"></p>
+            <p id="prodQty"></p>
+            <p id="prodCategory"></p>
+          <!-- <p id="prodCategory"></p> -->
+          <button id="addToCartBtn" onclick="addToCart()">Add to Cart</button>
+          <button onclick="showPage('home')">Continue Shopping</button>
+        </div>
+      </section>
+
+      <!-- CART PAGE -->
+      <section id="cart" class="page">
+        <h2>Your Cart</h2>
+        <div id="cartItems"></div>
+        <p id="cartTotal"></p>
+        <button onclick="checkout()">Buy Now</button>
+        <button onclick="continueShopping()">Continue Shopping</button>
+      </section>
+
+      <!-- ORDERS PAGE -->
+      <section id="orders" class="page">
+        <h2>My Orders</h2>
+        <div id="orderList"></div>
+        <button onclick="showPage('home')">Back to Home</button>
+      </section>
+
+      <!-- ADMIN PAGE -->
+      <!-- INITIAL SETUP PAGE (runs once to create admin and seed products) -->
+      <section id="setup" class="page">
+        <h2>Initial Setup</h2>
+        <p>Create an admin account to initialize the application. This will seed the product catalog and create the admin user.</p>
+        <input id="setupName" placeholder="Admin Name (optional)" />
+        <input id="setupEmail" placeholder="Admin Email" />
+        <div class="password-field">
+          <input id="setupPass" type="password" placeholder="Admin Password" />
+          <i class="fa-solid fa-eye toggle-eye" onclick="togglePassword('setupPass', this)"></i>
+        </div>
+        <div class="password-field">
+          <input id="setupConfirm" type="password" placeholder="Confirm Password" />
+          <i class="fa-solid fa-eye toggle-eye" onclick="togglePassword('setupConfirm', this)"></i>
+        </div>
+        <p id="setupError" class="error"></p>
+        <p id="setupSuccess" style="color:green;display:none"></p>
+  <button onclick="initializeApp()">Initialize App</button>
+      </section>
+
+      <section id="admin" class="page">
+        <h2>Admin Panel</h2>
+        <div class="admin-grid">
+          <div class="admin-column">
+            <h3>Add / Update Product</h3>
+            <form id="adminProdForm" onsubmit="event.preventDefault(); adminSaveProduct();">
+              <input type="hidden" id="adminProdId">
+              <input id="adminProdName" placeholder="Name">
+              <input id="adminProdPrice" type="number" placeholder="Price">
+              <input id="adminProdQty" type="number" placeholder="Qty">
+              <input id="adminProdImgFile" type="file" accept="image/*">
+              <input type="hidden" id="adminProdImg">
+              <img id="adminImgPreview" src="" alt="preview" style="display:none;max-width:100%;border-radius:8px;margin-top:8px" />
+              <input id="adminProdCategory" placeholder="Category">
+              <p id="adminProdError" class="error"></p>
+              <p id="adminProdSuccess" style="color:green;margin:6px 0;display:none"></p>
+              <button type="submit">Save Product</button>
+            </form>
+            <h3>Products</h3>
+            <div id="adminProductList"></div>
+          </div>
+          <div class="admin-column">
+            <h3>Orders</h3>
+            <div id="adminOrderList"></div>
+          </div>
+        </div>
+        <button onclick="showPage('home')">Back to Home</button>
+      </section>
+    </div>
+  <script src="src/helpers.js"></script>
+  <script src="src/auth.js"></script>
+  <script src="src/products.js"></script>
+  <script src="src/cart.js"></script>
+  <script src="src/orders.js"></script>
+  <script src="src/admin.js"></script>
+  <script src="src/main.js"></script>
+  </body>
+</html>
