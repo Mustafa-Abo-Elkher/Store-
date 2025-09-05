@@ -1,71 +1,9 @@
-Cinematic Store — Project Structure
+Cinematic Store — Features, Routing & Functionality
 
-Purpose
-
-- Single-page frontend app (vanilla HTML/CSS/JS) that demonstrates product listing, cart, orders, and a lightweight admin UI using localStorage.
-
-Top-level layout (inside `js/` folder)
-
-- index.html — main SPA markup, pages (register, login, home, product, cart, orders, admin, setup)
-- style.css — app styles
-- manifest.json — PWA metadata (icons)
-- media/ — product images and icons
-- src/ — all runtime JavaScript (recommended place for code)
-
-`src/` folder (authoritative runtime files)
-
-- `helpers.js`
-
-  - DOM helpers, storage helpers, validation utilities, base64 helpers.
-  - Exposes: `getUsers`, `saveUsers`, `getActiveUser`, `setActiveUser`, `updateUser`, `$id`, `showPage`, `isValidEmail`, `isValidPassword`, `togglePassword`, `arrayBufferToBase64`, `base64ToArrayBuffer`, `constantTimeCompare`.
-
-- `auth.js`
-
-  - Client-side auth helpers with Web Crypto PBKDF2 password hashing.
-  - Exposes: `hashPassword`, `verifyPassword`, `registerUser`, `loginUser`, `logout`, `clearInputs`.
-
-- `products.js`
-
-  - Product store, seeding, filtering, and detail view.
-  - Exposes: `ensureProductsInitialized`, `loadProducts`, `populateCategories`, `viewProduct`, `getNextProductId`.
-
-- `cart.js`
-
-  - Cart operations.
-  - Exposes: `addToCart`, `renderCart`, `removeItem`, `continueShopping`.
-
-- `orders.js`
-
-  - Checkout and user order rendering.
-  - Exposes: `checkout`, `renderOrders`.
-
-- `admin.js`
-
-  - Admin UI & product CRUD, attach file input handler for image uploads.
-  - Exposes: `attachAdminHandlers`, `ensureAdminUser`, `showAdmin`, `adminSaveProduct`, `adminEditProduct`, `adminDeleteProduct`, `renderAdminProducts`, `renderAdminOrders`, `adminConfirmOrder`.
-
-- `main.js`
-  - Application entry / initialization (calls `ensureAdminUser`, `ensureProductsInitialized`, wires UI on load).
-  - Exposes: `initializeApp` (setup flow), and `initApp` is called on window load.
-
-Development tips
-
-- Keep `src/` as the canonical place for runtime JS. `index.html` references `src/*.js`.
-- To prepare for publish, convert JS to ES modules and use a bundler (Vite/Rollup) to produce a production bundle and optionally minify assets.
-- Move sensitive logic (auth, orders) to a backend for production-grade security.
-
-Files intentionally kept out of `src/` (for now)
-
-- `README.md` and `README-structure.md` and `README-features.md` — documentation files.
-
-If you want, I can also:
-
-- Convert inline `onclick` handlers to unobtrusive event listeners in `main.js`.
-- Convert to ES modules and add a minimal `package.json` + Vite setup.
+Overview
+This file lists all user-facing features and the internal JS functions/pages that implement them. Use it as a quick reference when auditing behavior or writing tests.
 
 ## Structure Diagram (visual)
-
-Below are two simple visualizations of the project structure and the app startup flow: an ASCII diagram for plain viewers and a Mermaid flowchart (if your platform supports Mermaid rendering).
 
 ASCII folder layout
 
@@ -85,46 +23,69 @@ js/
    └─ main.js        <- app entry + initialization
 ```
 
-Startup / runtime flow (ASCII)
+Pages (in `index.html`)
 
-```
-[index.html] --loads--> [src/main.js]
-      |                     |
-      |                     v
-      |               initApp() (on load)
-      |                     |
-      |       -------------------------------
-      |       | ensureAdminUser(), ensureProductsInitialized()
-      |       -------------------------------
-      |                     |
-      v                     v
- showPage(login)      if activeUser -> isAdmin? -> showAdmin() : showHome()
-```
+- `#register` — user registration form
+- `#login` — login form
+- `#home` — product listing with filters (search, price range, category)
+- `#product` — product detail view
+- `#cart` — shopping cart
+- `#orders` — user orders
+- `#admin` — admin panel (product CRUD + orders overview)
+- `#setup` — one-time setup flow (create initial admin) — shown only when no admin exists
 
-Mermaid flowchart (paste into a renderer that supports Mermaid):
+Routing / UI flow (how pages are shown)
 
-```mermaid
-flowchart TD
-  A[index.html] --> B[src/main.js]
-  B --> C[initApp()]
-  C --> D{admin exists?}
-  D -- no --> E[show setup]
-  D -- yes --> F{activeUser?}
-  F -- no --> G[show login]
-  F -- yes --> H{isAdmin?}
-  H -- yes --> I[showAdmin()]
-  H -- no --> J[showHome()]
-  C --> K[ensureProductsInitialized()]
-  subgraph src
-    B
-    K
-  end
-```
+- `showPage(id)` — central helper that toggles `.active` on `.page` sections. All navigation uses this to switch pages.
+- On app load (`src/main.js -> initApp()`):
+  - `ensureAdminUser()` runs to seed an admin if no admin exists (this preserves previous behavior).
+  - `ensureProductsInitialized()` seeds default products if none are stored.
+  - If `getActiveUser()` exists, show admin panel (if admin) or `#home` (if regular user).
+  - Otherwise, if no admin exists show `#setup`, else show `#login`.
 
-\
+Authentication
 
-## Visual structure (SVG)
+- Registration: `registerUser()` (`src/auth.js`)
+  - Validates inputs; hashes passwords via `hashPassword()` (PBKDF2); saves user to `localStorage`.
+- Login: `loginUser()` (`src/auth.js`)
+  - Verifies password with `verifyPassword()`; supports migrating legacy plaintext passwords by re-hashing on successful login.
+  - Sets `activeUser` in localStorage via `setActiveUser()` and updates UI.
+- Logout: `logout()` clears `activeUser` and returns to `#login`.
 
-The diagram below is included as an SVG for a crisp, Git-friendly visual. If your renderer doesn't display it inline, open `media/structure.svg` directly.
+Products
 
-![Project structure diagram](media/structure.svg)
+- Persistence: `getStoredProducts()` / `saveStoredProducts()` store products in `localStorage` under `products`.
+- Seeding: `ensureProductsInitialized()` populates `products` with `defaultProducts` when empty.
+- Listing and filters: `loadProducts(filterText, minPrice, maxPrice, category)` renders product cards in `#productList`.
+- Category dropdown: `populateCategories()` reads categories from products and fills `#categoryFilter`.
+- Product detail: `viewProduct(id)` fills `#product` page elements (name, image, price, qty, category) and hides Add-to-Cart for admins.
+
+Cart & Orders
+
+- Cart: stored on the user object (`user.cart`).
+  - `addToCart()` pushes `currentProduct` to `user.cart` and calls `updateUser()` to persist.
+  - `renderCart()` shows cart items and total.
+  - `removeItem(index)` removes an item and re-renders.
+- Checkout: `checkout()` creates an order object `{id, items, total}` and moves cart to `user.orders`, empties cart, saves user.
+- Orders page: `renderOrders()` shows the logged-in user’s orders.
+
+Admin features
+
+- Admin identification: a `isAdmin` boolean on the user object.
+- Default admin seeding: `ensureAdminUser()` creates a default admin `admin@admin.com` with password `Admin123!` (hashed) if none exists.
+- Product CRUD
+  - `adminSaveProduct()` (create/update)
+  - `renderAdminProducts()` lists admin products with Edit/Delete
+  - `adminEditProduct(id)` populates the admin form
+  - `adminDeleteProduct(id)` removes product from `products` and updates DOM/storage
+- Image upload
+  - `attachAdminHandlers()` binds a File input change event to convert the file to a DataURL (base64) and stores it in the hidden `#adminProdImg` input and shows a preview.
+- Orders management
+  - `getAllUserOrders()` collects orders from all users
+  - `renderAdminOrders()` lists all orders with a Confirm button
+  - `adminConfirmOrder(userEmail, orderId)` removes the specified order from the user and updates storage/UI
+
+Utilities / Helpers
+
+- `helpers.js` provides small helpers used across features (DOM, storage, encoding, validation).
+- `hashPassword()` / `verifyPassword()` use Web Crypto PBKDF2 + SHA-256 for client-side password hashing (note: client-side hashing does not replace server-side secure auth).
