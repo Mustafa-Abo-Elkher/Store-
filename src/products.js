@@ -10,35 +10,11 @@ function saveStoredProducts(list) {
 const defaultProducts = [
   {
     id: 1,
-    name: "Book",
-    price: 200,
-    qty: 5,
-    img: "media/9780300266245.avif",
+    name: "",
+    price: 0,
+    qty: 0,
+    img: "",
     category: "Books",
-  },
-  {
-    id: 2,
-    name: "Pen",
-    price: 100,
-    qty: 10,
-    img: "media/a-game-of-thrones.jpg",
-    category: "Stationery",
-  },
-  {
-    id: 3,
-    name: "Palestine",
-    price: 500,
-    qty: 3,
-    img: "media/palestine.jpg",
-    category: "Electronics",
-  },
-  {
-    id: 4,
-    name: "Makeup",
-    price: 250,
-    qty: 8,
-    img: "media/widow_of_the_south_350.jpg",
-    category: "Beauty",
   },
 ];
 
