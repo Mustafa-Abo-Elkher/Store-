@@ -35,8 +35,8 @@ async function initApp() {
     }
   } else {
     // no active user
-   localStorage.removeItem("activeUser"); // optional but recommended
-  showPage("login");
+    localStorage.removeItem("activeUser"); 
+    showPage("login");
   }
 }
 
