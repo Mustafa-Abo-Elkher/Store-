@@ -35,8 +35,8 @@ async function initApp() {
     }
   } else {
     // no active user
-    if (!hasAdminUser()) showPage("setup");
-    else showPage("login");
+   localStorage.removeItem("activeUser"); // optional but recommended
+  showPage("login");
   }
 }
 
