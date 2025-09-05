@@ -69,16 +69,3 @@ Utilities / Helpers
 
 - `helpers.js` provides small helpers used across features (DOM, storage, encoding, validation).
 - `hashPassword()` / `verifyPassword()` use Web Crypto PBKDF2 + SHA-256 for client-side password hashing (note: client-side hashing does not replace server-side secure auth).
-
-Notes & caveats
-
-- This is a local-only demo app. For production, move auth and persistent data to a server-side API and use secure cookie/session management.
-- All images uploaded in admin are stored as Data URLs in `localStorage` — fine for small demos, not recommended for production.
-- Inline `onclick` attributes are currently used in `index.html` for quick binding. Converting to unobtrusive event listeners is recommended before converting to ES modules.
-
-Testing checklist (manual)
-
-- Register a user and verify stored user appears in `localStorage` (password is hashed).
-- Login with that user, add products to cart, checkout, and verify `orders` array is updated.
-- Login as admin, add a product with image upload, edit it, delete it, and verify listing updates.
-- Confirm an order as admin and ensure it is removed from the user and from admin view.
